@@ -1,0 +1,21 @@
+# 1. 데이터셋을 선택
+dataset_name=dragon
+
+# 2. finest voxel size를 선택
+finest_voxel_size=0.001
+
+# 3. Threshold option을 선택 (리스트로 돌릴건지? 지정해서 하나의 threshold만 사용할지?)
+thres_option=list # list or spec
+thres_list=(9e-5 8e-5 7e-5 5e-5 4e-5 3e-5 2e-5 1e-5 1e-4 3e-4 4e-4 5e-4)
+thres=0.00045
+
+# 4. split mode를 선택 (awmr? octree?)
+split_mode=AWMR #Octree or AWMR
+
+# 5. downsample mode를 선택 (pool? mean? weighted ?)
+sample_option=pool
+
+# 5. debug 여부를 선택 (일부 mesh만? 전체 mesh만?)
+debug_mode=n # y or n
+p1_input="324.537079 319.181885 302.698151"
+p2_input="353.121277 169.191376 227.605362"
