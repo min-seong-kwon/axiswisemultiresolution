@@ -1,0 +1,10 @@
+ArithmeticEncodingPython
+_meshes/
+OriginalDataset/
+vunits/
+
+*.pyc
+*.ply
+
+!*.xlsx
+!*.m
