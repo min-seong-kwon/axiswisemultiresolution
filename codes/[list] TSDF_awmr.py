@@ -81,7 +81,7 @@ for thres in thres_list:
     thres2str = str(thres)
     awmr_mesh_path = f'{target_path}/{dataset_name}_awmr_thres={thres2str}.ply'
     awmr_tsdfs = {}
-    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split {dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
+    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split awmr:{dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])
@@ -104,7 +104,7 @@ for thres in thres_list:
     # split된 TSDF block을 meshing
     ###############################################################################
     mesh = o3d.geometry.TriangleMesh()
-    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh {dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
+    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh awmr: {dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
         block_mesh = mesh_whole_block_singularize(awmr_tsdfs[k],
                                                 unit_index=k,
                                                 awmr_dict=awmr_tsdfs,
