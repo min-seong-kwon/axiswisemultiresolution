@@ -1,16 +1,16 @@
 # 1. 데이터셋을 선택
-dataset_name=dragon
+dataset_name=armadillo
 
 # 2. finest voxel size를 선택
-finest_voxel_size=0.001
+finest_voxel_size=0.75
 
 # 3. Threshold option을 선택 (리스트로 돌릴건지? 지정해서 하나의 threshold만 사용할지?)
 thres_option=list # list or spec
-thres_list=(9e-5 8e-5 7e-5 5e-5 4e-5 3e-5 2e-5 1e-5 1e-4 3e-4 4e-4 5e-4)
+thres_list=(5e-4 4e-4 3e-4 2.5e-4 2.2e-4 2e-4 1.8e-4 1.5e-4 1.2e-4 1e-4 9e-5 8e-5 7e-5 5e-5 4e-5 3e-5 2e-5 1e-5)
 thres=0.00045
 
 # 4. split mode를 선택 (awmr? octree?)
-split_mode=AWMR #Octree or AWMR
+split_mode=octree #Octree or AWMR
 
 # 5. downsample mode를 선택 (pool? mean? weighted ?)
 sample_option=pool

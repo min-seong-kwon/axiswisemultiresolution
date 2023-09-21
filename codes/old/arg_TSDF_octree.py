@@ -5,7 +5,7 @@ import pickle
 
 from source.ConfigSettings import base_volume_unit_dim, base_voxel_size
 from source.VolumeUnit import VolumeUnit
-from source.AWMR_utils import pad_awmr_from_original,make_mesh, mesh_whole_block_singularize, split_until_thres, pad_3d, get_condition
+from source.AWMR_utils import pad_awmr_from_original,make_mesh, mesh_whole_block_singularize, split_until_thres_octree, pad_3d, get_condition
 from source.AWMRblock8x8 import AWMRblock8x8 as AWMRblock # TODO
 from utils.TSDFDataset import TSDFDataset
 import igl
@@ -49,7 +49,7 @@ if __name__=='__main__':
     sample_option = args.sample_option
     assert sample_option in ['pool', 'mean', 'weighted'], "choose down sample option properly"
     evaluate = args.evaluate
-    print(f"[AWMR] [voxsize = {finest_voxel_size}] [thres = {thres}] [option = {sample_option}]")
+    print(f"[octree] [voxsize = {finest_voxel_size}] [thres = {thres}] [option: {sample_option}]")
 ##########################################################
     volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.3f}/volume_origin_{finest_voxel_size:.3f}.npy')
     if args.debug:
@@ -63,14 +63,15 @@ if __name__=='__main__':
         print(f"only processing volume units including from {p1} to {p2}...")
         print(f"i.e. from volume unit {vunit_start} to volume unit {vunit_end}")
 ##########################################################
-    target_path = fr'../results/[TSDF]{dataset_name}/AWMR/voxsize_{finest_voxel_size:.3f}'
-    mesh_filename = target_path + fr"/{dataset_name}_awmr_thres={thres}_{sample_option}.ply"
+    target_path = fr'../results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.3f}'
+    mesh_filename = target_path + fr"/{dataset_name}_octree_thres={thres}_{sample_option}.ply"
     blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 
     if not os.path.exists(target_path):
         os.makedirs(target_path, exist_ok=True)
     if not os.path.exists(blockmesh_path):
         os.makedirs(blockmesh_path, exist_ok=True)
+
 ##########################################################
     dataset_32 = TSDFDataset(dataset_name=dataset_name,
                             volume_unit_dim=32,
@@ -114,7 +115,7 @@ if __name__=='__main__':
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])
-
+        
         contd_condition = get_condition(volume_units_32,volume_units_16,volume_units_8,k)
 
         if contd_condition:
@@ -123,7 +124,7 @@ if __name__=='__main__':
         awmr_tsdfs[k] = AWMRblock(axisres=(8,8,8),
                                     unit_index=k,
                                     tsdf=volume_units_8[k].D)
-        split_until_thres(awmr_tsdfs[k], 
+        split_until_thres_octree(awmr_tsdfs[k], 
                         thres,
                         volume_units_16=volume_units_32,
                         volume_units_8=volume_units_16,
@@ -156,7 +157,6 @@ if __name__=='__main__':
         block_mesh.scale(1/scale_factor, center=tuple(volume_origin))
         if not block_mesh.has_vertex_colors:
             block_mesh.paint_uniform_color([1, 1, 1])
-        
         if np.sum(np.asarray(block_mesh.triangles)) == 0:
             continue
         

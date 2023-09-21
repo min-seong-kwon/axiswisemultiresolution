@@ -3,25 +3,52 @@ import open3d as o3d
 import torch
 from pytorch3d.structures import Meshes, Pointclouds
 import trimesh
+import os
+import sys
+import pandas
+from pandas import Series, DataFrame
+pandas.set_option('display.float_format', '{:.7f}'.format)
+pandas.set_option('display.max_rows', None)
+####################################################################################################
+dataset_name = 'dragon'
+finest_voxel_size = 0.0015
+####################################################################################################
+target_obj_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
+target_obj_mesh = trimesh.load(target_obj_mesh_path)
 
+finest_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_0.001/{dataset_name}_singleres=[32 32 32].ply'
+finest_mesh = trimesh.load(finest_mesh_path)
+####################################################################################################
+mesh_bbox = target_obj_mesh.bounding_box.extents
+scale_factors = 1000.0 / mesh_bbox
+target_obj_mesh.apply_scale(scale_factors)
+finest_mesh.apply_scale(scale_factors)
 
-target_mesh_path = '../results/[TSDF]armadillo/SingleRes/voxsize_0.500/armadillo_singleres=[32 32 32].ply'
-src_mesh = trimesh.load(target_mesh_path)
-src_verts = np.array(src_mesh.vertices)
-src_faces = np.array(src_mesh.faces)
+target_obj_verts = np.array(target_obj_mesh.vertices)
+target_obj_faces = np.array(target_obj_mesh.faces)
+finest_mesh_verts = np.array(finest_mesh.vertices)
+finest_mesh_faces = np.array(finest_mesh.faces)
+####################################################################################################
+from source.ChamferDistance import symmetric_face_to_point_distance, custom_ChamferDistance
 
-awmr_mesh_path1 = '../results/[TSDF]armadillo/SingleRes/voxsize_0.500/armadillo_singleres=[8 8 8].ply'
+awmr_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.3f}/{dataset_name}_singleres=[16 16 16].ply'
+awmr_mesh = trimesh.load(awmr_mesh_path)
+awmr_mesh.apply_scale(scale_factors)
 
-awmr_mesh = trimesh.load(awmr_mesh_path1)
 awmr_verts = np.array(awmr_mesh.vertices)
 awmr_faces = np.array(awmr_mesh.faces)
 
-from source.ChamferDistance import symmetric_face_to_point_distance, custom_ChamferDistance
-
-src_verts = src_verts.astype(np.float32)
+target_obj_verts = target_obj_verts.astype(np.float32)
+target_obj_faces = target_obj_faces.astype(np.int32)
+finest_mesh_verts = finest_mesh_verts.astype(np.float32)
+finest_mesh_faces = finest_mesh_faces.astype(np.int32)
 awmr_verts = awmr_verts.astype(np.float32)
-src_faces = src_faces.astype(np.int32)
 awmr_faces = awmr_faces.astype(np.int32)
 
-dist_A2B, dist_B2A = symmetric_face_to_point_distance(src_verts, src_faces, awmr_verts, awmr_faces)
-print((dist_A2B+dist_B2A).item())
+####################################################################################################
+dist_original_A2B, dist_original_B2A = symmetric_face_to_point_distance(target_obj_verts, target_obj_faces, awmr_verts, awmr_faces)
+dist_finest_A2B, dist_finest_B2A = symmetric_face_to_point_distance(finest_mesh_verts, finest_mesh_faces, awmr_verts, awmr_faces)
+
+print("\n[비교하려는 대상 메시]:",os.path.basename(awmr_mesh_path))
+print("[원본 obj 파일과의 distance]:",(dist_original_A2B+dist_original_B2A).item())
+print("[finest mesh 파일과의 distance]:",(dist_finest_A2B+dist_finest_B2A).item())

@@ -2,6 +2,7 @@ ArithmeticEncodingPython
 _meshes/
 OriginalDataset/
 vunits/
+results/
 
 *.pyc
 *.ply
