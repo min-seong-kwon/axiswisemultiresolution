@@ -351,4 +351,4 @@ def custom_ChamferDistance(mesh1, mesh2, voxel_size=None):
     dist_A2B, dist_B2A = symmetric_face_to_point_distance(verts1_np, tris1_np, verts2_np, tris2_np, voxel_size)
     distance = dist_A2B + dist_B2A
     distance = distance.cpu().numpy()
-    return distance
+    return float(distance)

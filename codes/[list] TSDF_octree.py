@@ -34,9 +34,9 @@ src_mesh = trimesh.load(target_mesh_path)
 src_verts = np.array(src_mesh.vertices)
 src_faces = np.array(src_mesh.faces)
 # 원하는 resolution 선택
-volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.3f}/volume_origin_{finest_voxel_size:.3f}.npy')
+volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
-target_path = fr'../results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.3f}'
+target_path = fr'../results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.6f}'
 blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 if not os.path.exists(target_path):
     os.makedirs(target_path, exist_ok=True)
@@ -81,7 +81,7 @@ for thres in thres_list:
     thres2str = str(thres)
     octree_mesh_path = f'{target_path}/{dataset_name}_octree_thres={thres2str}.ply'
     awmr_tsdfs = {}
-    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split octree: {dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
+    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split octree: {dataset_name}_{finest_voxel_size:.6f}, thres={thres}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])
@@ -104,7 +104,7 @@ for thres in thres_list:
     # split된 TSDF block을 meshing
     ###############################################################################
     mesh = o3d.geometry.TriangleMesh()
-    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh octree: {dataset_name}_{finest_voxel_size:.3f}, thres={thres}"):
+    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh octree: {dataset_name}_{finest_voxel_size:.6f}, thres={thres}"):
         block_mesh = mesh_whole_block_singularize(awmr_tsdfs[k],
                                                 unit_index=k,
                                                 awmr_dict=awmr_tsdfs,

@@ -31,7 +31,7 @@ class MPEGDataset(Dataset):
         self._loadDataset()
         
     def _loadDataset(self):
-        npzfiles = glob(f'../vunits/{self.dataset_name}/voxsize_{self.finest_voxel_size:.3f}/{self.dataset_name}_{self.axisres_str}/*.npz')
+        npzfiles = glob(f'../vunits/{self.dataset_name}/voxsize_{self.finest_voxel_size:.6f}/{self.dataset_name}_{self.axisres_str}/*.npz')
 
         for npz in npzfiles: #tqdm(npzfiles, desc=f"loading {self.dataset_name}, dim={self.axisres}"):
             strlist = re.findall(r'\d+', os.path.split(npz)[-1])

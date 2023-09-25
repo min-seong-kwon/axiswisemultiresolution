@@ -15,6 +15,7 @@ import open3d as o3d
 import igl
 import pickle
 import pandas as pd
+import trimesh
 
 ###############################################################################
 # 데이터셋, 원하는 resolution 선택
@@ -26,7 +27,7 @@ dataset_voxel_sizes = {
     'thai': 0.5
 }
 # 데이터셋 선택
-dataset_name = 'armadillo'
+dataset_name = 'dragon'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # 원본 메시 로드
@@ -35,11 +36,11 @@ src_mesh = trimesh.load(target_mesh_path)
 src_verts = np.array(src_mesh.vertices)
 src_faces = np.array(src_mesh.faces)
 # 원하는 resolution 선택
-final_res = np.array([16,16,8])
+final_res = np.array([32,32,32])
 print(f"[dataset = {dataset_name}_{finest_voxel_size}] [final res = {final_res}] [current voxel size = {(finest_voxel_size*32)/final_res}]")
-volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.3f}/volume_origin_{finest_voxel_size:.3f}.npy')
+volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
-target_path = fr'../results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.3f}'
+target_path = fr'../0924_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}'
 mesh_filename = target_path + fr"/{dataset_name}_singleres={final_res}.ply"
 blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 if not os.path.exists(target_path):
@@ -62,7 +63,6 @@ if debug:
 ###############################################################################
 dataset = {}
 volume_units = {}  
-
 res = np.array([8,16,32])
 combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 for axisres in tqdm(combinations):
@@ -82,7 +82,6 @@ for axisres in tqdm(combinations):
     for k in dataset[axisres_str].tsdf_blocks.keys():
         volume_units[axisres_str][k] = VolumeUnit_AWMR(axisres=axisres)
         volume_units[axisres_str][k].D = dataset[axisres_str].tsdf_blocks[k]
-
 ###############################################################################
 # 8x8x8 블록으로부터, 원하는 해상도까지 split
 ###############################################################################
@@ -143,3 +142,8 @@ for k in tqdm(awmr_tsdfs.keys()):
 
 o3d.io.write_triangle_mesh(mesh_filename,
                             mesh, write_ascii=True, write_vertex_colors=True)
+
+# 09.25 추가
+ori_mesh = trimesh.load(mesh_filename)
+trimesh.repair.fill_holes(ori_mesh)
+ori_mesh.export(mesh_filename)

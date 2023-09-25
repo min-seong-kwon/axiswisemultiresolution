@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from source.ConfigSettings import base_volume_unit_dim, base_voxel_size
 from source.VolumeUnit import VolumeUnit_AWMR
-from source.AWMR_utils_v3 import get_all_condition, split_until_thres, mesh_whole_block_singularize
+from source.AWMR_utils_v3 import get_all_condition, split_octree, mesh_whole_block_singularize
 from source.AWMRblock8x8 import AWMRblock8x8 as AWMRblock # TODO
 
 from utils.MPEGDataset import MPEGDataset
@@ -21,7 +21,7 @@ import gc
 ###############################################################################
 dataset_voxel_sizes = {
     'armadillo': 0.4,
-    'dragon': 0.00075,
+    'dragon': 0.001,
     'thai': 0.5
 }
 # 데이터셋 선택
@@ -36,7 +36,7 @@ src_faces = np.array(src_mesh.faces)
 # 원하는 resolution 선택
 volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
-target_path = fr'../results/[TSDF]{dataset_name}/awmr/voxsize_{finest_voxel_size:.6f}'
+target_path = fr'../0924_results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.6f}'
 blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 if not os.path.exists(target_path):
     os.makedirs(target_path, exist_ok=True)
@@ -73,15 +73,14 @@ for axisres in tqdm(combinations):
 # 8x8x8 블록으로부터, 원하는 해상도까지 split
 # thres list 순회 (자동화)
 ###############################################################################
-thres_list=[0.0005, 0.0003, 0.00025, 0.00022,
-            0.0002, 0.00018, 0.00015, 0.00012,
-            0.0001, 7e-05, 4e-05, 1e-05]
+thres_list = np.logspace(0, 1.6, 15) * 5e-8
 
 for thres in thres_list:
-    thres2str = str(thres)
-    awmr_mesh_path = f'{target_path}/{dataset_name}_awmr_thres={thres2str}.ply'
+    # thres2str = str(thres)
+    thres2str = str(round(thres*1e6,3))
+    octree_mesh_path = f'{target_path}/{dataset_name}_octree_thres={thres2str}.ply'
     awmr_tsdfs = {}
-    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split awmr:{dataset_name}_{finest_voxel_size:.6f}, thres={thres}"):
+    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split octree: {dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])
@@ -93,7 +92,7 @@ for thres in thres_list:
                                     unit_index=k,
                                     tsdf=volume_units['8_8_8'][k].D)
 
-        split_until_thres(awmr_tsdfs[k],
+        split_octree(awmr_tsdfs[k],
                         thres,
                         volume_units,
                         axisres=np.array([8,8,8]),
@@ -104,7 +103,7 @@ for thres in thres_list:
     # split된 TSDF block을 meshing
     ###############################################################################
     mesh = o3d.geometry.TriangleMesh()
-    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh awmr: {dataset_name}_{finest_voxel_size:.6f}, thres={thres}"):
+    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh octree: {dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
         block_mesh = mesh_whole_block_singularize(awmr_tsdfs[k],
                                                 unit_index=k,
                                                 awmr_dict=awmr_tsdfs,
@@ -126,7 +125,12 @@ for thres in thres_list:
         o3d.io.write_triangle_mesh(
             title, block_mesh, write_ascii=True, write_vertex_colors=True)
 
-    o3d.io.write_triangle_mesh(awmr_mesh_path,
+    o3d.io.write_triangle_mesh(octree_mesh_path,
                                 mesh, write_ascii=True, write_vertex_colors=True)
+    
+    # 09.25 추가
+    ori_mesh = trimesh.load(octree_mesh_path)
+    trimesh.repair.fill_holes(ori_mesh)
+    ori_mesh.export(octree_mesh_path)
     
     del mesh, awmr_tsdfs

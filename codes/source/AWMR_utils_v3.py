@@ -400,7 +400,7 @@ def split_until_thres(awmrblock,
                     max_res=32,
                     for_train=False
                     ):
-    version=1
+    version=2
     # mask generation, if for_train is set to True
     if for_train and (awmrblock.tsdf.M is None):
         pad_for_mask = pad_awmr_from_original(awmrblock.tsdf.D,
@@ -568,7 +568,8 @@ def split_until_thres(awmrblock,
     
     awmrblock.tsdf = None
     
-    if minerror>thres:
+    # if minerror>thres:
+    if True:
         if awmrblock.left is not None:
             split_until_thres(awmrblock=awmrblock.left,
                             thres=thres,
@@ -603,7 +604,7 @@ def split_octree(awmrblock,
                     max_res=32,
                     for_train=False
                     ):
-    version=1
+    version=2
     # mask generation, if for_train is set to True
     if for_train and (awmrblock.tsdf.M is None):
         pad_for_mask = pad_awmr_from_original(awmrblock.tsdf.D,

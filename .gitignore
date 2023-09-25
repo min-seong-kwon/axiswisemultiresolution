@@ -3,9 +3,11 @@ _meshes/
 OriginalDataset/
 vunits/
 results/
+0924_results/
 
 *.pyc
 *.ply
+*.png
 
 !*.xlsx
 !*.m

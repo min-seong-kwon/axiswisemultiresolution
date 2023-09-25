@@ -51,7 +51,7 @@ if __name__=='__main__':
     evaluate = args.evaluate
     print(f"[octree] [voxsize = {finest_voxel_size}] [thres = {thres}] [option: {sample_option}]")
 ##########################################################
-    volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.3f}/volume_origin_{finest_voxel_size:.3f}.npy')
+    volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
     if args.debug:
         assert (args.debug_p1 is not None) and (args.debug_p2 is not None),\
             "when using DEBUG flag both debug_p1 and debug_p2 arguments must have exactly 3 values: x, y, z coordinates. eg. --debug_p1 -0.023710 0.421007 0.902411 --debug_p2 1.415677 1.076951 0.901995"
@@ -63,7 +63,7 @@ if __name__=='__main__':
         print(f"only processing volume units including from {p1} to {p2}...")
         print(f"i.e. from volume unit {vunit_start} to volume unit {vunit_end}")
 ##########################################################
-    target_path = fr'../results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.3f}'
+    target_path = fr'../results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.6f}'
     mesh_filename = target_path + fr"/{dataset_name}_octree_thres={thres}_{sample_option}.ply"
     blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 

@@ -10,13 +10,19 @@ from pandas import Series, DataFrame
 pandas.set_option('display.float_format', '{:.7f}'.format)
 pandas.set_option('display.max_rows', None)
 ####################################################################################################
+dataset_voxel_sizes = {
+    'armadillo': 0.4,
+    'dragon': 0.00075,
+    'thai': 0.5
+}
+# 데이터셋 선택
 dataset_name = 'dragon'
-finest_voxel_size = 0.0015
+finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 ####################################################################################################
 target_obj_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
 target_obj_mesh = trimesh.load(target_obj_mesh_path)
 
-finest_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_0.001/{dataset_name}_singleres=[32 32 32].ply'
+finest_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32].ply'
 finest_mesh = trimesh.load(finest_mesh_path)
 ####################################################################################################
 mesh_bbox = target_obj_mesh.bounding_box.extents
@@ -31,7 +37,7 @@ finest_mesh_faces = np.array(finest_mesh.faces)
 ####################################################################################################
 from source.ChamferDistance import symmetric_face_to_point_distance, custom_ChamferDistance
 
-awmr_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.3f}/{dataset_name}_singleres=[16 16 16].ply'
+awmr_mesh_path = f'../results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32].ply'
 awmr_mesh = trimesh.load(awmr_mesh_path)
 awmr_mesh.apply_scale(scale_factors)
 

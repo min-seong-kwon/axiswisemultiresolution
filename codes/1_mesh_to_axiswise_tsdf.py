@@ -47,7 +47,7 @@ def generate_volume_mask(volume, mask):
 ###############################################################################
 # INPUT 정보 
 ###############################################################################
-DATASET_NAME = 'armadillo'
+DATASET_NAME = 'dragon'
 TARGET_MESH_PATH = f'../OriginalDataset/{DATASET_NAME}.ply'
 src_mesh = trimesh.load(TARGET_MESH_PATH)
 src_verts = np.array(src_mesh.vertices)
@@ -58,7 +58,7 @@ mesh_max_bound = np.max(src_verts, axis=0)
 # CONFIG
 ###############################################################################
 maxres = 32
-finest_voxel_size = 0.4
+finest_voxel_size = 0.00075
 res = np.array([8,16,32])
 combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 
@@ -66,17 +66,18 @@ combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 # 모든 해상도에 대해 축별 다해상도 볼륨 유닛 생성
 ###############################################################################
 for axisres in tqdm(combinations):
+    # axisres = np.array([32,32,32])
     voxel_size = np.array(finest_voxel_size * maxres / axisres)
     SDF_TRUNC = finest_voxel_size * 6
     axisres_str = '_'.join(map(str,axisres))
-    VUNIT_PATH = f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.3f}'
+    VUNIT_PATH = f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}'
     if not os.path.exists(VUNIT_PATH):
         os.makedirs(VUNIT_PATH, exist_ok=True)
     
     volume_origin = (np.asarray(mesh_min_bound)).reshape((3,1))
-    np.save(VUNIT_PATH + f'/volume_origin_{finest_voxel_size:.3f}.npy', volume_origin)
+    np.save(VUNIT_PATH + f'/volume_origin_{finest_voxel_size:.6f}.npy', volume_origin)
     
-    RESULT_PATH = f'../results/[TSDF]{DATASET_NAME}/SingleRes/TSDF/voxsize_{finest_voxel_size:.3f}'
+    RESULT_PATH = f'../results/[TSDF]{DATASET_NAME}/SingleRes/TSDF/voxsize_{finest_voxel_size:.6f}'
     if not os.path.exists(RESULT_PATH):
         os.makedirs(RESULT_PATH, exist_ok=True)
     RESULT_MESH_NAME = RESULT_PATH + \
@@ -116,8 +117,8 @@ for axisres in tqdm(combinations):
     TSDF_MASK = np.zeros_like(TSDF_VOL)
     generate_volume_mask(TSDF_VOL, TSDF_MASK)                
 
-    if not os.path.exists(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.3f}/{DATASET_NAME}_{axisres_str}'):
-        os.mkdir(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.3f}/{DATASET_NAME}_{axisres_str}')
+    if not os.path.exists(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}'):
+        os.mkdir(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}')
         
 
     for x in range(0, TSDF_VOL.shape[0], axisres[0]):
@@ -135,4 +136,4 @@ for axisres in tqdm(combinations):
                 
                 vunit.D = TSDF
                 vunit.W = MASK
-                vunit.save(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.3f}/{DATASET_NAME}_{axisres_str}/{vunit_x}_{vunit_y}_{vunit_z}.npz')
+                vunit.save(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}/{vunit_x}_{vunit_y}_{vunit_z}.npz')

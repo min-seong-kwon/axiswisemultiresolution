@@ -60,7 +60,7 @@ class TSDFDataset(Dataset):
         # npzfiles = glob('../vunits/%s/voxsize_%.1f/SDF/soldier_%d/*.npz' % (
         #     self.dataset_name, self.finest_voxel_size, self.volume_unit_dim
         # ))
-        npzfiles = glob('../vunits/%s/voxsize_%.3f/%s_%d/*.npz' % (
+        npzfiles = glob('../vunits/%s/voxsize_%.6f/%s_%d/*.npz' % (
             self.dataset_name, self.finest_voxel_size, self.dataset_name, self.volume_unit_dim
         ))
         for npz in tqdm(npzfiles, desc=f"loading {self.dataset_name}, dim={self.volume_unit_dim}", leave=True):
