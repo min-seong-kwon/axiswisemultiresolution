@@ -114,7 +114,7 @@ for k, root in awmr_tsdfs.items():
 
 pkl_path = os.path.basename(mesh_filename).replace('.ply', '.pkl')
 with open(pkl_path, "wb") as f: 
-        pickle.dump(awmr_tsdfs, f)
+    pickle.dump(awmr_tsdfs, f)
 ###############################################################################
 # split된 TSDF block을 meshing
 ###############################################################################

@@ -114,7 +114,7 @@ for thres in thres_list:
     
     pkl_path = os.path.basename(octree_mesh_path).replace('.ply', '.pkl')
     with open(pkl_path, "wb") as f: 
-            pickle.dump(awmr_tsdfs, f)
+        pickle.dump(awmr_tsdfs, f)
     ###############################################################################
     # split된 TSDF block을 meshing
     ###############################################################################
