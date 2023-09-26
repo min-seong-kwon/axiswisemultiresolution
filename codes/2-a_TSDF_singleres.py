@@ -107,6 +107,7 @@ for k in tqdm(volume_units['32_32_32'].keys()):
                     start_point=np.array((0,0,0)),
                     final_res=final_res,
                     for_train=True)
+del volume_units
 n_blocks = 0
 for k, root in awmr_tsdfs.items():
     n_blocks += len(root.leaves)

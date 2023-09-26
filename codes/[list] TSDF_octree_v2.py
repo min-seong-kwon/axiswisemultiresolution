@@ -36,7 +36,7 @@ scale_factor = 0.002/finest_voxel_size
 gt_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
 gt_mesh = trimesh.load(gt_mesh_path)
 # finest mesh 로드
-finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32].ply'
+finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32]_filled.ply'
 finest_mesh = trimesh.load(finest_mesh_path)
 volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
