@@ -352,3 +352,29 @@ def custom_ChamferDistance(mesh1, mesh2, voxel_size=None):
     distance = dist_A2B + dist_B2A
     distance = distance.cpu().numpy()
     return float(distance)
+
+def ChamferDistance_upscaled(my_mesh,
+                            gt_mesh,
+                            finest_mesh,
+                            scaler=1000.0,
+                            voxel_size=None):
+    mesh_bbox = gt_mesh.bounding_box.extents
+    scale_factor = scaler / mesh_bbox
+    
+    my_mesh.apply_scale(scale_factor)
+    gt_mesh.apply_scale(scale_factor)
+    finest_mesh.apply_scale(scale_factor)
+    
+    my_verts = (np.array(my_mesh.vertices)).astype(np.float32)
+    my_faces = (np.array(my_mesh.triangles)).astype(np.int32)
+    gt_verts = (np.array(gt_mesh.vertices)).astype(np.float32)
+    gt_faces = (np.array(gt_mesh.triangles)).astype(np.int32)
+    finest_verts = (np.array(finest_mesh.vertices)).astype(np.float32)
+    finest_faces = (np.array(finest_mesh.triangles)).astype(np.int32)
+    
+    d_gt_A2B, d_gt_B2A = symmetric_face_to_point_distance(my_verts, my_faces, gt_verts, gt_faces, voxel_size)
+    d_gt = float((d_gt_A2B + d_gt_B2A).cpu().numpy())
+    d_finest_A2B, d_finest_B2A = symmetric_face_to_point_distance(my_verts, my_faces, finest_verts, finest_faces, voxel_size)
+    d_finest = float((d_finest_A2B + d_finest_B2A).cpu().numpy())
+    
+    return d_gt, d_finest

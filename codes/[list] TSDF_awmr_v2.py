@@ -6,37 +6,41 @@ from source.ConfigSettings import base_volume_unit_dim, base_voxel_size
 from source.VolumeUnit import VolumeUnit_AWMR
 from source.AWMR_utils_v3 import get_all_condition, split_until_thres, mesh_whole_block_singularize
 from source.AWMRblock8x8 import AWMRblock8x8 as AWMRblock # TODO
-
+from source.ChamferDistance import ChamferDistance_upscaled
 from utils.MPEGDataset import MPEGDataset
 from utils.evalUtils import key_is_in
 import trimesh
 import open3d as o3d
+from pandas import Series, DataFrame
 
 import igl
 import pickle
 import pandas as pd
 import gc
 ###############################################################################
-# 데이터셋, 원하는 resolution 선택
+# 데이터셋, 디렉토리 설정
 ###############################################################################
 dataset_voxel_sizes = {
-    'armadillo': 0.4,
-    'dragon': 0.001,
-    'thai': 0.5
+    'armadillo': 0.2,
+    'dragon': 0.0002,
+    'thai': 0.4,
+    'asia':0.2,
+    'happy': 0.0002,
+    'lucy': 1.0
 }
 # 데이터셋 선택
 dataset_name = 'dragon'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
-# 원본 메시 로드
-target_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
-src_mesh = trimesh.load(target_mesh_path)
-src_verts = np.array(src_mesh.vertices)
-src_faces = np.array(src_mesh.faces)
-# 원하는 resolution 선택
+# GT 메시 로드
+gt_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
+gt_mesh = trimesh.load(gt_mesh_path)
+# finest mesh 로드
+finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32].ply'
+finest_mesh = trimesh.load(finest_mesh_path)
 volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
-target_path = fr'../0924_results/[TSDF]{dataset_name}/awmr/voxsize_{finest_voxel_size:.6f}'
+target_path = fr'../0926_results/[TSDF]{dataset_name}/awmr/voxsize_{finest_voxel_size:.6f}'
 blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 if not os.path.exists(target_path):
     os.makedirs(target_path, exist_ok=True)
@@ -74,12 +78,15 @@ for axisres in tqdm(combinations):
 # thres list 순회 (자동화)
 ###############################################################################
 thres_list = np.logspace(0, 1.6, 15) * 5e-8
-
+filesize_list = [] 
+num_blocks_list = []
+dist_original = []
+dist_finest = []
 for thres in thres_list:
-    # thres2str = str(thres)
     thres2str = str(round(thres*1e6,3))
     awmr_mesh_path = f'{target_path}/{dataset_name}_awmr_thres={thres2str}.ply'
     awmr_tsdfs = {}
+    
     for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split awmr:{dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
@@ -99,6 +106,15 @@ for thres in thres_list:
                         unit_index=k,
                         start_point=np.array((0,0,0)),
                         for_train=True)
+    
+    n_blocks = 0
+    for k, root in awmr_tsdfs.items():
+        n_blocks += len(root.leaves)
+    num_blocks_list.append(n_blocks)
+    
+    pkl_path = os.path.basename(awmr_mesh_path).replace('.ply', '.pkl')
+    with open(pkl_path, "wb") as f: 
+            pickle.dump(awmr_tsdfs, f)
     ###############################################################################
     # split된 TSDF block을 meshing
     ###############################################################################
@@ -127,9 +143,28 @@ for thres in thres_list:
 
     o3d.io.write_triangle_mesh(awmr_mesh_path,
                                 mesh, write_ascii=True, write_vertex_colors=True)
-    # 09.25 추가
-    ori_mesh = trimesh.load(awmr_mesh_path)
-    trimesh.repair.fill_holes(ori_mesh)
-    ori_mesh.export(awmr_mesh_path)
+    del mesh
+    # mesh 후처리
+    filled_mesh_path = os.path.basename(awmr_mesh_path).replace('.ply', '_filled.ply')
+    processed_mesh = trimesh.load(awmr_mesh_path)
+    processed_mesh.update_faces(processed_mesh.nondegenerate_faces())
+    trimesh.repair.fill_holes(processed_mesh)
+    processed_mesh.export(filled_mesh_path)
     
-    del mesh, awmr_tsdfs
+    # processed mesh 그리고 gt_mesh + finest_mesh의 거리를 측정 + append
+    file_size = os.path.getsize(filled_mesh_path) / 1024
+    d_gt, d_finest = ChamferDistance_upscaled(processed_mesh, gt_mesh, finest_mesh)
+    dist_original.append(d_gt)
+    dist_finest.append(d_finest)
+    filesize_list.append(file_size)
+    
+    del awmr_tsdfs, processed_mesh
+
+raw_data = {'thres': thres_list,
+            'file size': filesize_list,
+            '# of blocks': num_blocks_list,
+            'original dist': dist_original,
+            'finest dist': dist_finest}
+data = DataFrame(raw_data).transpose()
+data.to_excel(f'{target_path}/RD_{dataset_name}_awmr.xlsx', index=False)
+print(data)

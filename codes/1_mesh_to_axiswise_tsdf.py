@@ -47,8 +47,18 @@ def generate_volume_mask(volume, mask):
 ###############################################################################
 # INPUT 정보 
 ###############################################################################
+dataset_voxel_sizes = {
+    'armadillo': 0.2,
+    'dragon': 0.0002,
+    'thai': 0.4,
+    'asia':0.2,
+    'happy': 0.0002,
+    'lucy': 1.0
+}
 DATASET_NAME = 'dragon'
 TARGET_MESH_PATH = f'../OriginalDataset/{DATASET_NAME}.ply'
+finest_voxel_size = dataset_voxel_sizes.get(DATASET_NAME, None)
+
 src_mesh = trimesh.load(TARGET_MESH_PATH)
 src_verts = np.array(src_mesh.vertices)
 src_faces = np.array(src_mesh.faces)
@@ -58,10 +68,8 @@ mesh_max_bound = np.max(src_verts, axis=0)
 # CONFIG
 ###############################################################################
 maxres = 32
-finest_voxel_size = 0.00075
 res = np.array([8,16,32])
 combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
-
 ###############################################################################
 # 모든 해상도에 대해 축별 다해상도 볼륨 유닛 생성
 ###############################################################################
@@ -77,7 +85,7 @@ for axisres in tqdm(combinations):
     volume_origin = (np.asarray(mesh_min_bound)).reshape((3,1))
     np.save(VUNIT_PATH + f'/volume_origin_{finest_voxel_size:.6f}.npy', volume_origin)
     
-    RESULT_PATH = f'../results/[TSDF]{DATASET_NAME}/SingleRes/TSDF/voxsize_{finest_voxel_size:.6f}'
+    RESULT_PATH = f'../0926_results/[TSDF]{DATASET_NAME}/SingleRes/TSDF/voxsize_{finest_voxel_size:.6f}'
     if not os.path.exists(RESULT_PATH):
         os.makedirs(RESULT_PATH, exist_ok=True)
     RESULT_MESH_NAME = RESULT_PATH + \
@@ -120,7 +128,8 @@ for axisres in tqdm(combinations):
     if not os.path.exists(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}'):
         os.mkdir(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}')
         
-
+    del tsdf_values, out_verts, out_faces, out_normals, out_values, out_mesh
+    
     for x in range(0, TSDF_VOL.shape[0], axisres[0]):
         for y in range(0, TSDF_VOL.shape[1], axisres[1]):
             for z in range(0, TSDF_VOL.shape[2], axisres[2]):
@@ -137,3 +146,5 @@ for axisres in tqdm(combinations):
                 vunit.D = TSDF
                 vunit.W = MASK
                 vunit.save(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}/{vunit_x}_{vunit_y}_{vunit_z}.npz')
+                
+                del vunit

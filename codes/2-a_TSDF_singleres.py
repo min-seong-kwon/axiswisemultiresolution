@@ -22,25 +22,24 @@ import trimesh
 ###############################################################################
 evaluate = False
 dataset_voxel_sizes = {
-    'armadillo': 0.4,
-    'dragon': 0.001,
-    'thai': 0.5
+    'armadillo': 0.2,
+    'dragon': 0.0002,
+    'thai': 0.4,
+    'asia':0.2,
+    'happy': 0.0002,
+    'lucy': 1.0
 }
 # 데이터셋 선택
 dataset_name = 'dragon'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
-# 원본 메시 로드
-target_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
-src_mesh = trimesh.load(target_mesh_path)
-src_verts = np.array(src_mesh.vertices)
-src_faces = np.array(src_mesh.faces)
+
 # 원하는 resolution 선택
 final_res = np.array([32,32,32])
 print(f"[dataset = {dataset_name}_{finest_voxel_size}] [final res = {final_res}] [current voxel size = {(finest_voxel_size*32)/final_res}]")
 volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
-target_path = fr'../0924_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}'
+target_path = fr'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}'
 mesh_filename = target_path + fr"/{dataset_name}_singleres={final_res}.ply"
 blockmesh_path = f'../_meshes/{dataset_name}/axisres' # for debug
 if not os.path.exists(target_path):
@@ -108,7 +107,13 @@ for k in tqdm(volume_units['32_32_32'].keys()):
                     start_point=np.array((0,0,0)),
                     final_res=final_res,
                     for_train=True)
+n_blocks = 0
+for k, root in awmr_tsdfs.items():
+    n_blocks += len(root.leaves)
 
+pkl_path = os.path.basename(mesh_filename).replace('.ply', '.pkl')
+with open(pkl_path, "wb") as f: 
+        pickle.dump(awmr_tsdfs, f)
 ###############################################################################
 # split된 TSDF block을 meshing
 ###############################################################################
@@ -143,7 +148,14 @@ for k in tqdm(awmr_tsdfs.keys()):
 o3d.io.write_triangle_mesh(mesh_filename,
                             mesh, write_ascii=True, write_vertex_colors=True)
 
+del mesh
 # 09.25 추가
-ori_mesh = trimesh.load(mesh_filename)
-trimesh.repair.fill_holes(ori_mesh)
-ori_mesh.export(mesh_filename)
+filled_mesh_path = os.path.basename(mesh_filename).replace('.ply', '_filled.ply')
+processed_mesh = trimesh.load(mesh_filename)
+processed_mesh.update_faces(processed_mesh.nondegenerate_faces())
+trimesh.repair.fill_holes(processed_mesh)
+processed_mesh.export(filled_mesh_path)
+
+file_size = os.path.getsize(filled_mesh_path) / 1024
+print(f"filesize: {file_size} KB | # of blocks: {n_blocks}")
+#TODO: pkl file save + TSDF block return + update_faces() + fill_holes()
