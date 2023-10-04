@@ -6,7 +6,7 @@ import trimesh
 import numpy as np
 from tqdm import tqdm
 from source.VolumeUnit import VolumeUnit_AWMR
-
+import gc
 @njit
 def generate_voxel_coordinates(out_coords, start_position, grid_dim, voxel_size):
     for x in range(grid_dim[0]):
@@ -74,7 +74,8 @@ combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 # 모든 해상도에 대해 축별 다해상도 볼륨 유닛 생성
 ###############################################################################
 for axisres in tqdm(combinations):
-    # axisres = np.array([32,32,32])
+    axisres = np.array([32,32,32])
+    print(axisres)
     voxel_size = np.array(finest_voxel_size * maxres / axisres)
     SDF_TRUNC = finest_voxel_size * 6
     axisres_str = '_'.join(map(str,axisres))
@@ -146,5 +147,5 @@ for axisres in tqdm(combinations):
                 vunit.D = TSDF
                 vunit.W = MASK
                 vunit.save(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}/{vunit_x}_{vunit_y}_{vunit_z}.npz')
-                
-                del vunit
+    del TSDF_VOL, TSDF_MASK
+    gc.collect()

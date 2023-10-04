@@ -29,7 +29,7 @@ dataset_voxel_sizes = {
     'lucy': 1.0
 }
 # 데이터셋 선택
-dataset_name = 'dragon'
+dataset_name = 'happy'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # GT 메시 로드
@@ -112,7 +112,7 @@ for thres in thres_list:
         n_blocks += len(root.leaves)
     num_blocks_list.append(n_blocks)
     
-    pkl_path = os.path.basename(octree_mesh_path).replace('.ply', '.pkl')
+    pkl_path = octree_mesh_path.replace('.ply', '.pkl')
     with open(pkl_path, "wb") as f: 
         pickle.dump(awmr_tsdfs, f)
     ###############################################################################
@@ -145,7 +145,7 @@ for thres in thres_list:
                                 mesh, write_ascii=True, write_vertex_colors=True)
     del mesh
     # mesh 후처리
-    filled_mesh_path = os.path.basename(octree_mesh_path).replace('.ply', '_filled.ply')
+    filled_mesh_path = octree_mesh_path.replace('.ply', '_filled.ply')
     processed_mesh = trimesh.load(octree_mesh_path)
     processed_mesh.update_faces(processed_mesh.nondegenerate_faces())
     trimesh.repair.fill_holes(processed_mesh)
@@ -153,18 +153,18 @@ for thres in thres_list:
     
     # processed mesh 그리고 gt_mesh + finest_mesh의 거리를 측정 + append
     file_size = os.path.getsize(filled_mesh_path) / 1024
-    d_gt, d_finest = ChamferDistance_upscaled(processed_mesh, gt_mesh, finest_mesh)
-    dist_original.append(d_gt)
-    dist_finest.append(d_finest)
+    # d_gt, d_finest = ChamferDistance_upscaled(processed_mesh, gt_mesh, finest_mesh)
+    # dist_original.append(d_gt)
+    # dist_finest.append(d_finest)
     filesize_list.append(file_size)
     
     del awmr_tsdfs, processed_mesh
 
 raw_data = {'thres': thres_list,
             'file size': filesize_list,
-            '# of blocks': num_blocks_list,
-            'original dist': dist_original,
-            'finest dist': dist_finest}
+            '# of blocks': num_blocks_list}
+            # 'original dist': dist_original,
+            # 'finest dist': dist_finest}
 data = DataFrame(raw_data).transpose()
 data.to_excel(f'{target_path}/RD_{dataset_name}_octree.xlsx', index=False)
 print(data)

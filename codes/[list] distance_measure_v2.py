@@ -12,18 +12,21 @@ pandas.set_option('display.float_format', '{:.7f}'.format)
 pandas.set_option('display.max_rows', None)
 ####################################################################################################
 dataset_voxel_sizes = {
-    'armadillo': 0.4,
-    'dragon': 0.001,
-    'thai': 0.5
+    'armadillo': 0.2,
+    'dragon': 0.0002,
+    'thai': 0.4,
+    'asia':0.2,
+    'happy': 0.0002,
+    'lucy': 1.0
 }
-dataset_name = 'dragon'
+dataset_name = 'armadillo'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 split = 'awmr'
 ####################################################################################################
 target_obj_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
 target_obj_mesh = trimesh.load(target_obj_mesh_path)
 
-finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32].ply'
+finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32]_filled.ply'
 finest_mesh = trimesh.load(finest_mesh_path)
 ####################################################################################################
 mesh_bbox = target_obj_mesh.bounding_box.extents
@@ -46,7 +49,7 @@ th_list = []
 filesize_list = [] 
 print(f"[dataset: {dataset_name}] [split: {split}] [voxsize: {finest_voxel_size}]")
 for thres in tqdm(thres_list):
-    awmr_mesh_path = f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/{dataset_name}_{split}_thres={thres}.ply'
+    awmr_mesh_path = f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/{dataset_name}_{split}_thres={thres}_filled.ply'
     file_size = os.path.getsize(awmr_mesh_path) / 1024
     
     awmr_mesh = trimesh.load(awmr_mesh_path)
@@ -74,5 +77,5 @@ raw_data = {'thres': th_list,
             'original dist': dist_original,
             'finest dist': dist_finest}
 data = DataFrame(raw_data).transpose()
-data.to_excel(f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/RD_{dataset_name}_{split}.xlsx', index=False)
+data.to_excel(f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/Distortion_{dataset_name}_{split}.xlsx', index=False)
 print(data)
