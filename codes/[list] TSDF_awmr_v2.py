@@ -21,7 +21,7 @@ import gc
 # 데이터셋, 디렉토리 설정
 ###############################################################################
 dataset_voxel_sizes = {
-    'armadillo': 0.2,
+    'armadillo': 1.5, #0.2,
     'dragon': 0.0002,
     'thai': 0.4,
     'asia':0.2,
@@ -29,7 +29,7 @@ dataset_voxel_sizes = {
     'lucy': 1.0
 }
 # 데이터셋 선택
-dataset_name = 'dragon'
+dataset_name = 'armadillo'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # GT 메시 로드
@@ -141,9 +141,9 @@ for thres in thres_list:
             continue
 
         mesh += block_mesh
-        title = os.path.join(blockmesh_path,  f'{k[-3]}_{k[-2]}_{k[-1]}.ply')
-        o3d.io.write_triangle_mesh(
-            title, block_mesh, write_ascii=True, write_vertex_colors=True)
+        # title = os.path.join(blockmesh_path,  f'{k[-3]}_{k[-2]}_{k[-1]}.ply')
+        # o3d.io.write_triangle_mesh(
+        #     title, block_mesh, write_ascii=True, write_vertex_colors=True)
 
     o3d.io.write_triangle_mesh(awmr_mesh_path,
                                 mesh, write_ascii=True, write_vertex_colors=True)

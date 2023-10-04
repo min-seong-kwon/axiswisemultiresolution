@@ -137,9 +137,9 @@ for thres in thres_list:
             continue
 
         mesh += block_mesh
-        title = os.path.join(blockmesh_path,  f'{k[-3]}_{k[-2]}_{k[-1]}.ply')
-        o3d.io.write_triangle_mesh(
-            title, block_mesh, write_ascii=True, write_vertex_colors=True)
+        # title = os.path.join(blockmesh_path,  f'{k[-3]}_{k[-2]}_{k[-1]}.ply')
+        # o3d.io.write_triangle_mesh(
+        #     title, block_mesh, write_ascii=True, write_vertex_colors=True)
 
     o3d.io.write_triangle_mesh(octree_mesh_path,
                                 mesh, write_ascii=True, write_vertex_colors=True)

@@ -56,7 +56,7 @@ dataset_voxel_sizes = {
     'happy': 0.0002,
     'lucy': 1.0
 }
-DATASET_NAME = 'asia'
+DATASET_NAME = 'armadillo'
 TARGET_MESH_PATH = f'../OriginalDataset/{DATASET_NAME}.ply'
 finest_voxel_size = dataset_voxel_sizes.get(DATASET_NAME, None)
 
@@ -75,7 +75,6 @@ combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 # 모든 해상도에 대해 축별 다해상도 볼륨 유닛 생성
 ###############################################################################
 for axisres in tqdm(combinations):
-# axisres = np.array([8,16,16])
     voxel_size = np.array(finest_voxel_size * maxres / axisres)
     SDF_TRUNC = finest_voxel_size * 6
     axisres_str = '_'.join(map(str,axisres))
@@ -99,7 +98,12 @@ for axisres in tqdm(combinations):
     if not os.path.exists(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}'):
         os.mkdir(f'../vunits/{DATASET_NAME}/voxsize_{finest_voxel_size:.6f}/{DATASET_NAME}_{axisres_str}')
         
-    voxel_grid_dim = (np.ceil((mesh_max_bound - mesh_min_bound)/voxel_size/axisres)*axisres).astype(np.int32)
+    # voxel_grid_dim = (np.ceil((mesh_max_bound - mesh_min_bound)/voxel_size/axisres)*axisres).astype(np.int32)
+    voxel_grid_dim_x = (np.ceil((mesh_max_bound[0] - mesh_min_bound[0])/voxel_size[0]/axisres[0]) * axisres[0]).astype(np.int32)
+    voxel_grid_dim_y = (np.ceil((mesh_max_bound[1] - mesh_min_bound[1])/voxel_size[1]/axisres[1]) * axisres[1]).astype(np.int32)
+    voxel_grid_dim_z = (np.ceil((mesh_max_bound[2] - mesh_min_bound[2])/voxel_size[2]/axisres[2]) * axisres[2]).astype(np.int32)
+    voxel_grid_dim = np.array([voxel_grid_dim_x,voxel_grid_dim_y,voxel_grid_dim_z]).astype(np.int32)
+    
     f = SDF(src_verts, src_faces); # (num_vertices, 3) and (num_faces, 3)
     for x in range(0, voxel_grid_dim[0], axisres[0]):
         for y in range(0, voxel_grid_dim[1], axisres[1]):
@@ -115,9 +119,8 @@ for axisres in tqdm(combinations):
                     for sy in range(axisres[1]):
                         for sz in range(axisres[2]):
                             qp[sx,sy,sz,0] = mesh_min_bound[0] + voxel_size[0] * (x+sx)
-                            qp[sx,sy,sz,1] = mesh_min_bound[1] + voxel_size[1] * (x+sy)
-                            qp[sx,sy,sz,2] = mesh_min_bound[2] + voxel_size[2] * (x+sz)
-
+                            qp[sx,sy,sz,1] = mesh_min_bound[1] + voxel_size[1] * (y+sy)
+                            qp[sx,sy,sz,2] = mesh_min_bound[2] + voxel_size[2] * (z+sz)
                 qp_list = qp.reshape(-1, 3).tolist()
                 
                 sdf_values_list = f(qp_list)

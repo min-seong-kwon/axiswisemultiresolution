@@ -55,7 +55,7 @@ dataset_voxel_sizes = {
     'happy': 0.0002,
     'lucy': 1.0
 }
-DATASET_NAME = 'dragon'
+DATASET_NAME = 'armadillo'
 TARGET_MESH_PATH = f'../OriginalDataset/{DATASET_NAME}.ply'
 finest_voxel_size = dataset_voxel_sizes.get(DATASET_NAME, None)
 
@@ -74,8 +74,7 @@ combinations = np.array(np.meshgrid(res, res, res)).T.reshape(-1,3)
 # 모든 해상도에 대해 축별 다해상도 볼륨 유닛 생성
 ###############################################################################
 for axisres in tqdm(combinations):
-    axisres = np.array([32,32,32])
-    print(axisres)
+    # axisres = np.array([32,32,32])
     voxel_size = np.array(finest_voxel_size * maxres / axisres)
     SDF_TRUNC = finest_voxel_size * 6
     axisres_str = '_'.join(map(str,axisres))
