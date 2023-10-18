@@ -30,7 +30,7 @@ dataset_voxel_sizes = {
     'lucy': 1.0
 }
 # 데이터셋 선택
-dataset_name = 'asia'
+dataset_name = 'dragon'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # GT 메시 로드
@@ -163,7 +163,7 @@ for thres in thres_list:
 
 raw_data = {'thres': thres_list,
             'ori file size': orifile_size_list,
-            'filled file size': orifile_size_list,
+            'filled file size': filledfile_size_list,
             '# of blocks': num_blocks_list,
             'chamfer distance': chamferdist_list}
 

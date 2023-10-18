@@ -163,7 +163,7 @@ for thres in thres_list:
 
 raw_data = {'thres': thres_list,
             'ori file size': orifile_size_list,
-            'filled file size': orifile_size_list,
+            'filled file size': filledfile_size_list,
             '# of blocks': num_blocks_list,
             'chamfer distance': chamferdist_list}
 
