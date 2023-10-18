@@ -21,7 +21,7 @@ import gc
 # 데이터셋, 디렉토리 설정
 ###############################################################################
 dataset_voxel_sizes = {
-    'armadillo': 1.5, #0.2,
+    'armadillo': 0.2,
     'dragon': 0.0002,
     'thai': 0.4,
     'asia':0.2,
@@ -29,7 +29,7 @@ dataset_voxel_sizes = {
     'lucy': 1.0
 }
 # 데이터셋 선택
-dataset_name = 'armadillo'
+dataset_name = 'asia'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # GT 메시 로드
@@ -81,7 +81,7 @@ for axisres in tqdm(combinations):
 # 8x8x8 블록으로부터, 원하는 해상도까지 split
 # thres list 순회 (자동화)
 ###############################################################################
-thres_list = np.logspace(0, 1.6, 15) * 5e-8
+thres_list = np.linspace(2e-9, 2e-6, 10) # np.logspace(0, 2.6, 10) * 5e-9
 filesize_list = [] 
 num_blocks_list = []
 dist_original = []
@@ -91,7 +91,7 @@ for thres in thres_list:
     awmr_mesh_path = f'{target_path}/{dataset_name}_awmr_thres={thres2str}.ply'
     awmr_tsdfs = {}
     
-    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split awmr:{dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
+    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split awmr:{dataset_name}_{finest_voxel_size:.3f}, thres={thres2str}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])
@@ -123,7 +123,7 @@ for thres in thres_list:
     # split된 TSDF block을 meshing
     ###############################################################################
     mesh = o3d.geometry.TriangleMesh()
-    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh awmr: {dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
+    for k in tqdm(awmr_tsdfs.keys(), desc=f"mesh awmr: {dataset_name}_{finest_voxel_size:.3f}, thres={thres2str}"):
         block_mesh = mesh_whole_block_singularize(awmr_tsdfs[k],
                                                 unit_index=k,
                                                 awmr_dict=awmr_tsdfs,

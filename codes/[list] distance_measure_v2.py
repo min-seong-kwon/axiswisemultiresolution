@@ -19,14 +19,14 @@ dataset_voxel_sizes = {
     'happy': 0.0002,
     'lucy': 1.0
 }
-dataset_name = 'armadillo'
+dataset_name = 'asia'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
-split = 'awmr'
+split = 'octree'
 ####################################################################################################
 target_obj_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
 target_obj_mesh = trimesh.load(target_obj_mesh_path)
 
-finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32]_filled.ply'
+finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/original/{dataset_name}_singleres=[32 32 32].ply'
 finest_mesh = trimesh.load(finest_mesh_path)
 ####################################################################################################
 mesh_bbox = target_obj_mesh.bounding_box.extents
@@ -40,7 +40,7 @@ finest_mesh_verts = np.array(finest_mesh.vertices)
 finest_mesh_faces = np.array(finest_mesh.faces)
 ####################################################################################################
 from source.ChamferDistance import symmetric_face_to_point_distance, custom_ChamferDistance
-thres_list = np.logspace(0, 1.6, 15) * 5e-8
+thres_list = np.linspace(2e-9, 2e-6, 10) # np.logspace(0, 2.6, 10) * 5e-9
 thres_list = [str(round(th*1e6,3)) for th in thres_list]
 ####################################################################################################
 dist_original = []
@@ -49,7 +49,7 @@ th_list = []
 filesize_list = [] 
 print(f"[dataset: {dataset_name}] [split: {split}] [voxsize: {finest_voxel_size}]")
 for thres in tqdm(thres_list):
-    awmr_mesh_path = f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/{dataset_name}_{split}_thres={thres}_filled.ply'
+    awmr_mesh_path = f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/original/{dataset_name}_{split}_thres={thres}.ply'
     file_size = os.path.getsize(awmr_mesh_path) / 1024
     
     awmr_mesh = trimesh.load(awmr_mesh_path)
@@ -77,5 +77,5 @@ raw_data = {'thres': th_list,
             'original dist': dist_original,
             'finest dist': dist_finest}
 data = DataFrame(raw_data).transpose()
-data.to_excel(f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/Distortion_{dataset_name}_{split}.xlsx', index=False)
+data.to_excel(f'../0926_results/[TSDF]{dataset_name}/{split}/voxsize_{finest_voxel_size:.6f}/Distortion_original_{dataset_name}_{split}.xlsx', index=False)
 print(data)

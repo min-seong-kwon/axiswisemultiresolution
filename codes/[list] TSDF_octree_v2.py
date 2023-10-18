@@ -29,15 +29,15 @@ dataset_voxel_sizes = {
     'lucy': 1.0
 }
 # 데이터셋 선택
-dataset_name = 'happy'
+dataset_name = 'asia'
 finest_voxel_size = dataset_voxel_sizes.get(dataset_name, None)
 scale_factor = 0.002/finest_voxel_size
 # GT 메시 로드
 gt_mesh_path = f'../OriginalDataset/{dataset_name}.ply'
 gt_mesh = trimesh.load(gt_mesh_path)
 # finest mesh 로드
-finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32]_filled.ply'
-finest_mesh = trimesh.load(finest_mesh_path)
+# finest_mesh_path = f'../0926_results/[TSDF]{dataset_name}/SingleRes/voxsize_{finest_voxel_size:.6f}/{dataset_name}_singleres=[32 32 32]_filled.ply'
+# finest_mesh = trimesh.load(finest_mesh_path)
 volume_origin = np.load(f'../vunits/{dataset_name}/voxsize_{finest_voxel_size:.6f}/volume_origin_{finest_voxel_size:.6f}.npy')
 # 파일 저장 위치
 target_path = fr'../0926_results/[TSDF]{dataset_name}/octree/voxsize_{finest_voxel_size:.6f}'
@@ -77,7 +77,7 @@ for axisres in tqdm(combinations):
 # 8x8x8 블록으로부터, 원하는 해상도까지 split
 # thres list 순회 (자동화)
 ###############################################################################
-thres_list = np.logspace(0, 1.6, 15) * 5e-8
+thres_list = np.linspace(2e-9, 2e-6, 10) # np.logspace(0, 2.6, 10) * 5e-9
 filesize_list = [] 
 num_blocks_list = []
 dist_original = []
@@ -87,7 +87,7 @@ for thres in thres_list:
     thres2str = str(round(thres*1e6,3))
     octree_mesh_path = f'{target_path}/{dataset_name}_octree_thres={thres2str}.ply'
     awmr_tsdfs = {}
-    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split octree: {dataset_name}_{finest_voxel_size:.6f}, thres={thres2str}"):
+    for k in tqdm(volume_units['32_32_32'].keys(), desc=f"split octree: {dataset_name}_{finest_voxel_size:.3f}, thres={thres2str}"):
         if len(k)==3:
             print("your initial key length is 3, please modify code")
             k = (dataset_name, k[0], k[1], k[2])

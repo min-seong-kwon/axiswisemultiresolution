@@ -56,7 +56,7 @@ dataset_voxel_sizes = {
     'happy': 0.0002,
     'lucy': 1.0
 }
-DATASET_NAME = 'armadillo'
+DATASET_NAME = 'asia'
 TARGET_MESH_PATH = f'../OriginalDataset/{DATASET_NAME}.ply'
 finest_voxel_size = dataset_voxel_sizes.get(DATASET_NAME, None)
 
